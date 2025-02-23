@@ -1,0 +1,142 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
+/dts-v1/;
+
+#include "msm8916-ufi.dtsi"
+
+/ {
+	model = "KPS-MF601SL V1.0";
+	compatible = "kps,mf601sl-v1.0", "qcom,msm8916";
+		
+	aliases {
+		led-boot = &led_g;
+		led-failsafe = &led_r;
+		led-running = &led_g;
+		led-upgrade = &led_r;
+	};
+	
+	battery: battery {
+		compatible = "simple-battery";
+		voltage-min-design-microvolt = <3400000>;
+		voltage-max-design-microvolt = <4350000>;
+		charge-full-design-microamp-hours = <2100000>;
+
+		ocv-capacity-celsius = <25>;
+		ocv-capacity-table-0 = < 4327000 100 >,
+			< 4264000 95 >,
+			< 4187000 90 >,
+			< 4119000 85 >,
+			< 4069000 80 >,
+			< 4022000 75 >,
+			< 3964000 70 >,
+			< 9624000 65 >,
+			< 3890000 60 >,
+			< 3853000 55 >,
+			< 3801000 50 >,
+			< 3778000 45 >,
+			< 3769000 40 >,
+			< 3766000 35 >,
+			< 3760000 30 >,
+			< 3721000 25 >,
+			< 3660000 20 >,
+			< 3608000 16 >,
+			< 3579000 13 >,
+			< 3563000 11 >,
+			< 3548000 10 >,
+			< 3531000 9 >,
+			< 3520000 8 >,
+			< 3514000 7 >,
+			< 3502000 6 >,
+			< 3495000 5 >,
+			< 3489000 4 >,
+			< 3475000 3 >,
+			< 3460000 2 >,
+			< 3444000 1 >,
+			< 3400000 0 >;
+	};
+};
+
+&mpss {
+	pinctrl-0 = <&sim_ctrl_default>;
+	pinctrl-names = "default";
+};
+
+&leds {
+	system-green {
+		color = <LED_COLOR_ID_GREEN>;
+		default-state = "off";
+		label = "green:system";
+		gpios = <&msmgpio 118 GPIO_ACTIVE_HIGH>;
+	};
+
+	system-red {
+		color = <LED_COLOR_ID_RED>;
+		default-state = "off";
+		label = "red:system";
+		gpios = <&msmgpio 117 GPIO_ACTIVE_HIGH>;
+	};
+};
+	
+&button_default {
+	pins = "gpio34";
+	bias-pull-up;
+};
+
+&gpio_leds_default {
+	pins = "gpio20", "gpio21", "gpio117", "gpio118";
+};
+
+&usb {
+	dr_mode = "otg";
+	extcon = <&pm8916_charger>, <&usb_id>;
+};
+
+&usb_hs_phy {
+	extcon = <&pm8916_charger>;
+};
+
+&button_restart {
+	gpios = <&msmgpio 34 GPIO_ACTIVE_LOW>;
+};
+
+&led_r {
+	gpios = <&msmgpio 21 GPIO_ACTIVE_HIGH>;
+	label = "red:power";
+};
+
+&led_g {
+	gpios = <&msmgpio 20 GPIO_ACTIVE_HIGH>;
+	label = "green:power";
+};
+
+&pm8916_bms {
+	status = "okay";
+
+	monitored-battery = <&battery>;
+	power-supplies = <&pm8916_charger>;
+};
+
+&pm8916_charger {
+	status = "okay";
+
+	qcom,vdd-safe = <4380000>;
+	qcom,ibat-safe = <1000000>;
+
+	monitored-battery = <&battery>;
+};
+
+&msmgpio {
+	sim_ctrl_default: sim-ctrl-default-state {
+		sim-en-pins {
+			pins = "gpio24";
+			bias-disable;
+			output-low;
+		};
+
+		sim-sel-pins {
+			pins = "gpio49";
+			bias-disable;
+			output-high;
+		};
+	};
+};
