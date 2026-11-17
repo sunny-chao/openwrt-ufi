@@ -1,0 +1,18 @@
+. /lib/functions/leds.sh
+. /lib/functions/uci-defaults.sh
+
+board=$(board_name)
+
+board_config_update
+
+case $board in
+ufi,mf601s)
+	ucidef_set_led_heartbeat "system" "system" "green:power"
+	ucidef_set_led_wlan "charger" "charger" "red:power" "pm8916-bms-vm-charging"
+	;;
+
+esac
+
+board_config_flush
+
+exit 0
