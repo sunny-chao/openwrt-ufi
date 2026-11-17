@@ -102,7 +102,7 @@ TARGET_DEVICES += openstick-mf601sl
 define Device/openstick-mf601s
   $(Device/msm8916)
   DEVICE_VENDOR := UFi
-  DEVICE_MODEL := OpenStic MF601S
+  DEVICE_MODEL := OpenStick MF601S
   DEVICE_DTS := msm8916-ufi-mf601s
   DEVICE_DTS_DIR := ../dts
   DEVICE_PACKAGES := wpad-basic-wolfssl
