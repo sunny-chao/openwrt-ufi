@@ -23,13 +23,25 @@ define Build/sparse-img
 	mv $@.new $@
 endef
 
+define Build/aboot-sysupgrade-tar
+	rm -f $@.tmp
+	$(CP) $@ $@.tmp
+	sh $(TOPDIR)/scripts/sysupgrade-tar.sh \
+		--board $(if $(BOARD_NAME),$(BOARD_NAME),$(DEVICE_NAME)) \
+		--kernel $@.tmp \
+		--rootfs $(IMAGE_ROOTFS) \
+		$@
+	rm -f $@.tmp
+endef
+
 ### Devices ###
 define Device/Default
 	PROFILES := Default
 	KERNEL = kernel-bin | gzip | append-dtb
-	IMAGES := boot.img system.img
+	IMAGES := boot.img system.img sysupgrade.img
 	IMAGE/boot.img := append-kernel | aboot-img | append-metadata
 	IMAGE/system.img := append-rootfs | sparse-img | append-metadata
+    IMAGE/sysupgrade.img := append-kernel | aboot-img | aboot-sysupgrade-tar | append-metadata
 	DEVICE_DTS_DIR := $(DTS_DIR)/qcom
 	DEVICE_DTS = $$(SOC)-$(lastword $(subst _, ,$(1)))
 	CMDLINE := "earlycon console=ttyMSM0,115200 rw"
