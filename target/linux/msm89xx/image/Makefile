@@ -39,8 +39,8 @@ define Device/Default
 	PROFILES := Default
 	KERNEL = kernel-bin | gzip | append-dtb
 	IMAGES := boot.img system.img sysupgrade.img
-	IMAGE/boot.img := append-kernel | aboot-img | append-metadata
-	IMAGE/system.img := append-rootfs | sparse-img | append-metadata
+	IMAGE/boot.img := append-kernel | aboot-img
+	IMAGE/system.img := append-rootfs | sparse-img
     IMAGE/sysupgrade.img := append-kernel | aboot-img | aboot-sysupgrade-tar | append-metadata
 	DEVICE_DTS_DIR := $(DTS_DIR)/qcom
 	DEVICE_DTS = $$(SOC)-$(lastword $(subst _, ,$(1)))
