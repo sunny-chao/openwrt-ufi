@@ -15,7 +15,7 @@ endef
 
 include $(INCLUDE_DIR)/target.mk
 
-DEFAULT_PACKAGES += partx-utils e2fsprogs mkf2fs
+DEFAULT_PACKAGES += partx-utils e2fsprogs mkf2fs kmod-gpio-button-hotplug
 DEFAULT_PACKAGES += kmod-usb-chipidea kmod-usb-gadget-eth
 DEFAULT_PACKAGES += kmod-wcn36xx kmod-qcom-rproc-wcnss
 DEFAULT_PACKAGES += kmod-rpmsg-wwan-ctrl kmod-bam-dmux kmod-qcom-rproc-modem
