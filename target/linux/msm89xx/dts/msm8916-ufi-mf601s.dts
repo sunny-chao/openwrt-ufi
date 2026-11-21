@@ -3,18 +3,34 @@
 /dts-v1/;
 
 #include "msm8916-ufi.dtsi"
+#include <dt-bindings/input/input.h>
 
 / {
 	model = "UFi MF601S";
 	compatible = "ufi,mf601s", "qcom,msm8916";
-		
+
+	reserved-memory {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+
+		ramoops@8ff00000 {
+			compatible = "ramoops";
+			reg = <0x0 0x8ff00000 0x0 0x100000>; /* 1 MiB */
+			record-size = <0x20000>;             /* 128 KiB per oops/panic dump */
+			console-size = <0x40000>;            /* 256 KiB live console ring buffer */
+			pmsg-size = <0x10000>;               /* 64 KiB userspace log buffer */
+			ecc-size = <16>;                     /* 16-byte Reed-Solomon ECC for warm reboots */
+		};
+	};
+
 	aliases {
 		led-boot = &led_g;
 		led-failsafe = &led_r;
 		led-running = &led_g;
 		led-upgrade = &led_r;
 	};
-	
+
 	battery: battery {
 		compatible = "simple-battery";
 		voltage-min-design-microvolt = <3400000>;
@@ -54,36 +70,84 @@
 			< 3444000 1 >,
 			< 3400000 0 >;
 	};
-};
 
-&mpss {
-	pinctrl-0 = <&sim_ctrl_default>;
-	pinctrl-names = "default";
+	gpio-keys {
+		button-wps {
+			label = "Power";
+			linux,code = <KEY_POWER>;
+			gpios = <&msmgpio 107 GPIO_ACTIVE_LOW>;
+		};
+	};
 };
 
 &leds {
-	system-green {
+	led_r: led-r {
+		gpios = <&msmgpio 21 GPIO_ACTIVE_HIGH>;
+		label = "red:power";
+		default-state = "off";
+	};
+
+	led_g: led-g {
+		gpios = <&msmgpio 20 GPIO_ACTIVE_HIGH>;
+		label = "green:power";
+		default-state = "on";
+	};
+
+	led_b: led-b {
+		status = "disabled";
+	};
+
+	led-4g-red {
+		color = <LED_COLOR_ID_RED>;
+		default-state = "off";
+		label = "red:status";
+		gpios = <&msmgpio 117 GPIO_ACTIVE_HIGH>;
+	};
+
+	led-4g-green {
 		color = <LED_COLOR_ID_GREEN>;
 		default-state = "off";
-		label = "green:system";
+		label = "green:status";
 		gpios = <&msmgpio 118 GPIO_ACTIVE_HIGH>;
 	};
 
-	system-red {
-		color = <LED_COLOR_ID_RED>;
+	sim-en {
+		gpios = <&msmgpio 24 GPIO_ACTIVE_HIGH>;
+		label = "sim:en";
+		default-state = "on";
+	};
+
+	sim-sel {
+		gpios = <&msmgpio 49 GPIO_ACTIVE_HIGH>;
+		label = "sim:sel";
 		default-state = "off";
-		label = "red:system";
-		gpios = <&msmgpio 117 GPIO_ACTIVE_HIGH>;
+	};
+
+	esim1 {
+		gpios = <&msmgpio 50 GPIO_ACTIVE_HIGH>;
+		label = "sim:esim1";
+		default-state = "off";
+	};
+
+	esim2 {
+		gpios = <&msmgpio 51 GPIO_ACTIVE_HIGH>;
+		label = "sim:esim2";
+		default-state = "off";
 	};
 };
-	
+
 &button_default {
-	pins = "gpio34";
+	pins = "gpio34", "gpio107";
+	input-enable;
 	bias-pull-up;
 };
 
 &gpio_leds_default {
-	pins = "gpio20", "gpio21", "gpio117", "gpio118";
+	pins = "gpio20", "gpio21", "gpio22",
+	       "gpio24", "gpio49", "gpio50", "gpio51",
+	       "gpio112", "gpio113", "gpio114",
+	       "gpio115", "gpio116", "gpio117", "gpio118",
+	       "gpio119", "gpio120", "gpio121";
 };
 
 &usb {
@@ -97,16 +161,6 @@
 
 &button_restart {
 	gpios = <&msmgpio 34 GPIO_ACTIVE_LOW>;
-};
-
-&led_r {
-	gpios = <&msmgpio 21 GPIO_ACTIVE_HIGH>;
-	label = "red:power";
-};
-
-&led_g {
-	gpios = <&msmgpio 20 GPIO_ACTIVE_HIGH>;
-	label = "green:power";
 };
 
 &pm8916_bms {
@@ -123,20 +177,4 @@
 	qcom,ibat-safe = <1000000>;
 
 	monitored-battery = <&battery>;
-};
-
-&msmgpio {
-	sim_ctrl_default: sim-ctrl-default-state {
-		sim-en-pins {
-			pins = "gpio24";
-			bias-disable;
-			output-low;
-		};
-
-		sim-sel-pins {
-			pins = "gpio49";
-			bias-disable;
-			output-high;
-		};
-	};
 };
