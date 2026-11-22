@@ -5,11 +5,6 @@
 REQUIRE_IMAGE_METADATA=1
 RAMFS_COPY_BIN='mkfs.ext4'
 
-log_upgrade() {
-	v "$*"
-	[ -c /dev/pmsg0 ] && echo "sysupgrade: $*" > /dev/pmsg0
-}
-
 get_part_bytes() {
 	local dev_name="${1#/dev/}"
 	local sectors
@@ -88,19 +83,19 @@ platform_do_upgrade() {
 	local rootfs_dev=$(find_mmc_part "rootfs")
 
 	if [ -z "$board_dir" ] || [ -z "$boot_dev" ] || [ -z "$rootfs_dev" ]; then
-		log_upgrade "ERROR: Missing archive directory or target eMMC partitions"
+		v "ERROR: Missing archive directory or target eMMC partitions"
 		return 1
 	fi
 
-	log_upgrade "Flashing kernel/dtb to $boot_dev..."
+	v "Flashing kernel/dtb to $boot_dev..."
 	if ! get_image "$tar_file" | tar -xOf - "${board_dir}/kernel" | dd of="$boot_dev" bs=64k conv=fsync; then
-		log_upgrade "ERROR: Failed writing kernel to $boot_dev"
+		v "ERROR: Failed writing kernel to $boot_dev"
 		return 1
 	fi
 
-	log_upgrade "Flashing rootfs to $rootfs_dev..."
+	v "Flashing rootfs to $rootfs_dev..."
 	if ! get_image "$tar_file" | tar -xOf - "${board_dir}/root" | dd of="$rootfs_dev" bs=64k conv=fsync; then
-		log_upgrade "ERROR: Failed writing rootfs to $rootfs_dev"
+		v "ERROR: Failed writing rootfs to $rootfs_dev"
 		return 1
 	fi
 
@@ -108,18 +103,18 @@ platform_do_upgrade() {
 	if [ "$SAVE_CONFIG" != "1" ]; then
 		local data_dev=$(find_mmc_part "rootfs_data")
 		if [ -n "$data_dev" ]; then
-			log_upgrade "Formatting overlay partition $data_dev as ext4..."
+			v "Formatting overlay partition $data_dev as ext4..."
 			unmount_overlay_part "$data_dev"
 			if ! mkfs.ext4 -F -q -L rootfs_data "$data_dev"; then
-				log_upgrade "ERROR: Failed formatting $data_dev"
+				v "ERROR: Failed formatting $data_dev"
 				return 1
 			fi
 		else
-			log_upgrade "WARNING: rootfs_data partition not found"
+			v "WARNING: rootfs_data partition not found"
 		fi
 	fi
 
-	log_upgrade "Upgrade write complete, syncing..."
+	v "Upgrade write complete, syncing..."
 	sync
 }
 
@@ -131,7 +126,7 @@ platform_copy_config() {
 
 	mkdir -p /tmp/overlay_mnt
 	if mount -t ext4 "$data_dev" /tmp/overlay_mnt 2>/dev/null || {
-		log_upgrade "Converting $data_dev to ext4 before restoring config..."
+		v "Converting $data_dev to ext4 before restoring config..."
 		mkfs.ext4 -F -q -L rootfs_data "$data_dev" &&
 		mount -t ext4 "$data_dev" /tmp/overlay_mnt
 	}; then
@@ -139,7 +134,7 @@ platform_copy_config() {
 		sync
 		umount /tmp/overlay_mnt
 	else
-		log_upgrade "ERROR: Failed mounting $data_dev to copy backup config"
+		v "ERROR: Failed mounting $data_dev to copy backup config"
 	fi
 	rmdir /tmp/overlay_mnt 2>/dev/null
 }
